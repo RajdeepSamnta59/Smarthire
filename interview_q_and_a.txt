@@ -1,0 +1,466 @@
+Smart Recruitment System — Interview Questions & Answers
+
+This file contains 140+ interview-friendly questions and concise answers tailored to the Smart Recruitment System project in this workspace. Use it to study, make flashcards, or rehearse for interviews.
+
+Project Overview
+
+Q1: What is the main purpose of this project?
+A: The project is a Smart Recruitment System to parse resumes, match candidates to jobs, and generate candidate resumes or job application pages.
+
+Q2: Which framework is used?
+A: Django (a Python web framework) — the repo contains `manage.py` and `mysite/` Django app files.
+
+Q3: What are the core modules/files to show in an interview?
+A: `mysite/models.py`, `mysite/views.py`, `resume_parser.py`, `resume_generator.py`, `text_process.py`, and `manage.py`.
+
+Q4: How does the system accept resumes?
+A: Typically via file upload forms saved under `media/` and processed by parsing code (`resume_parser.py`).
+
+Q5: What output does the parser produce?
+A: Structured JSON or parsed text stored in `result/` and db fields (see `result/*.json` files).
+
+Q6: How are job descriptions stored?
+A: In `jobDetails/` as text files and normalized keywords in `normalized_keywords.txt`.
+
+Q7: How does the system rank candidates?
+A: It likely computes matches using keyword overlap, scoring in `mysite/evaluate_performance.py` or `text_process.py`.
+
+Q8: What data persistence is used?
+A: SQLite (`db.sqlite3`) by default with Django ORM models.
+
+Q9: Where are static assets and templates?
+A: Templates in `mysite/templates/mysite/` and static files in `static/` and `staticfiles/`.
+
+Q10: How would you explain this project to a non-technical interviewer?
+A: "It automates resume intake and ranks candidates against job descriptions using parsing and keyword-based matching, making hiring faster."
+
+Architecture & Design
+
+Q11: Describe the high-level architecture.
+A: Django web server handles UI/forms, file uploads; parser extracts structured data; scoring module compares resumes to job descriptions; results stored in DB and presented via templates.
+
+Q12: How do components communicate?
+A: Through function calls and Django models; parsed results stored in DB/files and accessed by view functions.
+
+Q13: How is the parsing pipeline organized?
+A: Upload -> save file -> `resume_parser` extracts text -> `text_process` normalizes -> score computation -> store/display.
+
+Q14: What modules handle front-end vs back-end?
+A: Templates and static assets = front-end; views, models, parser = back-end.
+
+Q15: How are sessions/authentication handled?
+A: Likely through Django auth (check `mysite/` for auth usage); refer to `templates/mysite/login.html`.
+
+Q16: Where would you add an API endpoint?
+A: In `mysite/views.py` and map it in `mysite/urls.py` with a JSON response via Django `JsonResponse`.
+
+Q17: How do you scale the system?
+A: Use larger DB (Postgres), background processing (Celery) for parsing, containerize app, and use a web server like Gunicorn + nginx.
+
+Q18: What design choices help maintainability?
+A: Modular functions (`resume_parser.py`, `text_process.py`), using Django models and templates, and storing job details externally.
+
+Q19: How would you add unit tests?
+A: Use Django TestCase in `mysite/tests.py` to test model logic, parser functions and views.
+
+Q20: How to add logging for debugging?
+A: Use Python `logging` module in parser and view functions.
+
+Django Fundamentals
+
+Q21: What is `manage.py` used for?
+A: Running server, migrations, shell, and Django management commands.
+
+Q22: What is a Django app vs project?
+A: Project is the whole configuration (`JobPortal/` and `mysite/`), app is a reusable module (here `mysite`).
+
+Q23: Where are URL routes defined?
+A: In `mysite/urls.py` and possibly root `urls.py`.
+
+Q24: How do migrations work?
+A: Django creates migration files in `migrations/` and applies them with `python manage.py migrate`.
+
+Q25: How to run the development server?
+A: `python manage.py runserver`
+
+Q26: How to create a new app?
+A: `python manage.py startapp <appname>`
+
+Q27: What is `settings.py`?
+A: Central configuration: DB, INSTALLED_APPS, STATIC/MEDIA settings.
+
+Q28: Where do you configure static/media roots?
+A: In `settings.py`: `STATIC_URL`, `STATIC_ROOT`, `MEDIA_URL`, `MEDIA_ROOT`.
+
+Q29: How to add a REST API quickly?
+A: Use Django REST Framework (install via `requirements.txt` and create serializers + viewsets).
+
+Q30: Explain request/response cycle in Django.
+A: Browser hits URL -> matched by `urls.py` -> view runs -> fetch/update models -> render template/return response.
+
+Models & Database
+
+Q31: How to represent candidates and jobs in models?
+A: Candidate model with fields (name, email, parsed_text, resume_file, score) and Job model with title, description, keywords.
+
+Q32: How to query best matches using ORM?
+A: Query all candidates and order by score: `Candidate.objects.order_by('-score')`.
+
+Q33: How to add indexes for performance?
+A: Use `indexes` or `db_index=True` on frequently queried fields.
+
+Q34: What are migrations `0001_initial.py` etc?
+A: Auto-generated schema changes that record DB modifications.
+
+Q35: Why use Django ORM not raw SQL?
+A: Readability, security (prevents SQL injection), portability.
+
+Q36: How to add a field to a model?
+A: Edit model, then `python manage.py makemigrations` and `migrate`.
+
+Q37: How to store parsed JSON in DB?
+A: Use `JSONField` (Django 3.1+) or `TextField` and parse when needed.
+
+Q38: How to backup the SQLite DB?
+A: Copy `db.sqlite3` file; for production migrate to Postgres and use pg_dump.
+
+Q39: How to enforce unique constraints?
+A: Use `unique=True` on model field.
+
+Q40: How to perform migrations in production?
+A: Put site into maintenance, run `migrate`, then restart.
+
+Views, URLs, Templates
+
+Q41: How to render a template from a view?
+A: `return render(request, 'mysite/index.html', context)`
+
+Q42: How to return JSON for AJAX?
+A: Use `JsonResponse({'key': value})`
+
+Q43: How to pass data to templates?
+A: Provide a `context` dict to `render`.
+
+Q44: What are template tags and filters?
+A: Template tags are logic operations (`{% for %}`), filters transform variables (`{{ value|lower }}`).
+
+Q45: How to handle file uploads in a form?
+A: Use `enctype="multipart/form-data"`, `request.FILES` and a `FileField` on model/form.
+
+Q46: How to secure views to logged-in users?
+A: Use `@login_required` decorator or `LoginRequiredMixin`.
+
+Q47: How to redirect after POST?
+A: `return redirect('some-view-name')` to avoid double POST.
+
+Q48: How to organize templates for reuse?
+A: Use base templates and `{% block %}` for child templates.
+
+Q49: How to serve static files during development?
+A: Ensure `STATICFILES_DIRS` set and `python manage.py runserver` serves them.
+
+Q50: How to include CSRF protection?
+A: Templates include `{% csrf_token %}` and middleware `CsrfViewMiddleware` enabled.
+
+Forms, Validation & Auth
+
+Q51: How to create a Django form?
+A: Use `forms.Form` or `forms.ModelForm` in `mysite/forms.py`.
+
+Q52: How to validate uploaded file types?
+A: In form `clean()` or model `clean()`, check file extension and MIME.
+
+Q53: How to create an admin user?
+A: `python manage.py createsuperuser`
+
+Q54: How to register models with admin?
+A: In `mysite/admin.py` call `admin.site.register(MyModel)`
+
+Q55: How to restrict access to certain job postings?
+A: Use model permissions and check `request.user.has_perm`.
+
+Q56: How to reset a password?
+A: Use Django's built-in password reset views and email settings in `settings.py`.
+
+Q57: How to hash passwords?
+A: Django automatically hashes via `User` model; don't store plain text.
+
+Q58: How to implement role-based access?
+A: Use groups and permissions (`Group` and `Permission` models).
+
+Q59: How to prevent unauthorized file access?
+A: Serve files through views that check permissions, not direct static paths.
+
+Q60: How to test forms?
+A: Write unit tests to submit form data and assert `form.is_valid()` and expected errors.
+
+File Handling & Media
+
+Q61: How are uploaded resumes stored?
+A: Usually in `MEDIA_ROOT` and recorded path in model's `FileField`.
+
+Q62: How to handle multiple resume formats (PDF/DOCX/TXT)?
+A: Use libraries: `pdfminer`/`PyPDF2` for PDFs, `python-docx` for DOCX, fallback to plain text.
+
+Q63: How to prevent large uploads?
+A: Limit via `DATA_UPLOAD_MAX_MEMORY_SIZE` or validate file size in form.
+
+Q64: How to sanitize filenames?
+A: Use `django.utils.text.get_valid_filename` or `uuid` to rename files.
+
+Q65: How to convert PDF to text?
+A: Use `pdfminer.six` or `PyPDF2` to extract text or the repo's `pdf2txt.py`.
+
+Q66: How to cleanup old uploaded files?
+A: Periodic job (cron/Celery) to delete or archive unused files.
+
+Q67: How to preview resumes in browser?
+A: Render as HTML or serve the PDF directly with correct `Content-Type`.
+
+Q68: How to protect user data in `media/`?
+A: Keep `MEDIA_ROOT` outside webroot in production and serve via views with permission checks.
+
+Q69: How to store processed results?
+A: Save JSON to `result/` directory and store reference in DB.
+
+Q70: How to detect text encoding issues?
+A: Try `utf-8`, fallback to `latin-1` and normalize via `str.encode/decode`.
+
+Resume Parsing & NLP
+
+Q71: What is the role of `resume_parser.py`?
+A: Extract fields (name, email, skills, experience) from raw resume text.
+
+Q72: How to extract email addresses?
+A: Regex: `r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+'` (explain simple).
+
+Q73: How to extract phone numbers?
+A: Regex tuned for country format or use `phonenumbers` library for robust parsing.
+
+Q74: How to extract education or work experience sections?
+A: Look for headings like "Education", "Experience" and parse surrounding lines.
+
+Q75: How to normalize skills/keywords?
+A: Lowercase, strip punctuation, map synonyms using `normalized_keywords.txt`.
+
+Q76: What NLP libraries are useful?
+A: `nltk`, `spaCy`, `scikit-learn`, but lightweight regex often enough for resume parsing.
+
+Q77: How to compute a candidate-job match score?
+A: Count overlapping keywords, weight by importance, normalize by resume length.
+
+Q78: How to handle synonyms and stemming?
+A: Use stemming (NLTK PorterStemmer) or word vectors for similarity.
+
+Q79: How to handle false positives in parsing?
+A: Post-process with validation (e.g., ensure email regex contains `@` and a domain).
+
+Q80: How to test parser accuracy?
+A: Use a dataset of resumes and measure precision/recall for extracted fields.
+
+Resume Generation & Templates
+
+Q81: What does `resume_generator.py` do?
+A: Create formatted resumes (maybe in HTML or PDF) from parsed data and templates.
+
+Q82: How to create a PDF from HTML?
+A: Use `WeasyPrint`, `wkhtmltopdf`, or `reportlab`.
+
+Q83: How to design a resume template?
+A: Use a base HTML template with Jinja/Django templating; inject parsed data.
+
+Q84: How to ensure consistent styling?
+A: Use CSS and a template system; test with sample data.
+
+Q85: How to allow users to edit generated resumes?
+A: Provide a form to update parsed fields then regenerate PDF.
+
+Q86: How to handle multi-language resumes?
+A: Use language detection and templates per language, or localization (Django i18n).
+
+Q87: How to include profile photos?
+A: Store as media file and reference in template with proper permissions.
+
+Q88: How to balance automated generation vs manual edits?
+A: Let system auto-fill then allow GUI edits before final PDF.
+
+Q89: How to version generated resumes?
+A: Save versions in DB with timestamp and pointer to file path.
+
+Q90: How to prefill job application forms with parsed data?
+A: Map parsed fields to form defaults on the application page.
+
+Testing, Debugging & Quality
+
+Q91: How to run unit tests?
+A: `python manage.py test` (Django test runner).
+
+Q92: Which parts need most tests?
+A: Parser functions, scoring logic, and critical views (file upload).
+
+Q93: How to debug a failing view?
+A: Use `print` temporarily, Django debug toolbar, or `pdb`/`ipdb`.
+
+Q94: How to check for database errors?
+A: Inspect migration history, run `python manage.py migrate --plan`, check logs in console.
+
+Q95: How to write a test for parsing emails?
+A: Create a resume text with known email and assert parser returns expected email.
+
+Q96: How to use linting and formatting?
+A: Use `flake8`, `black` from `requirements.txt` to keep Python code clean.
+
+Q97: How to profile slow code?
+A: Use `cProfile` or line profilers to find bottlenecks in parsing or scoring.
+
+Q98: How to ensure deterministic tests when randomness exists?
+A: Seed random sources or mock randomness.
+
+Q99: How to run a single test class/method?
+A: `python manage.py test mysite.tests.TestClass.test_method`
+
+Q100: How to use CI for this repo?
+A: Add GitHub Actions to run tests and linters on push/pull requests.
+
+Deployment & Environment
+
+Q101: How to prepare for production deployment?
+A: Switch DB to Postgres, set `DEBUG=False`, configure allowed hosts, use Gunicorn and nginx, set STATIC_ROOT, and use environment variables for secrets.
+
+Q102: How to install dependencies?
+A: `pip install -r requirements.txt`
+
+Q103: How to create environment variables in Windows PowerShell?
+A: `$env:DJANGO_SECRET_KEY = "value"; python manage.py runserver`
+
+Q104: How to migrate static files to `staticfiles/`?
+A: `python manage.py collectstatic`
+
+Q105: How to configure email sending for password reset?
+A: Set `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` in `settings.py`.
+
+Q106: How to run the app on Heroku or similar?
+A: Use Gunicorn, a Procfile, and set environment variables; convert SQLite to Postgres.
+
+Q107: How to use Docker for this project?
+A: Write a `Dockerfile` and `docker-compose.yml` for Django + DB + static storage.
+
+Q108: How to secure secret keys?
+A: Use environment variables or a secrets manager; do not commit to repo.
+
+Q109: How to monitor application health?
+A: Use logging, health endpoints, and APM tools (New Relic, Sentry).
+
+Q110: How to serve media files in production?
+A: Use cloud storage (AWS S3) and set `DEFAULT_FILE_STORAGE`.
+
+Python Fundamentals (for strengthening)
+
+Q111: How to open and read a file in Python?
+A: `with open('file.txt', 'r', encoding='utf-8') as f: data = f.read()`
+
+Q112: How to handle exceptions?
+A: `try: ... except Exception as e: ...` and use specific exception types.
+
+Q113: What is a list vs tuple?
+A: List is mutable (`[]`), tuple is immutable (`()`).
+
+Q114: How to iterate with index?
+A: `for i, item in enumerate(mylist):`
+
+Q115: How to import a function from a file?
+A: `from resume_parser import parse_resume`
+
+Q116: What is a Python virtual environment and why use it?
+A: Isolates project dependencies; create with `python -m venv .venv`.
+
+Q117: How to install a package?
+A: `pip install package_name` or `pip install -r requirements.txt`
+
+Q118: How to use list comprehensions?
+A: `squared = [x*x for x in nums if x>0]`
+
+Q119: What is a decorator?
+A: A function that modifies another function, e.g., `@login_required`.
+
+Q120: How to read JSON from file?
+A: `import json; data = json.load(open('file.json'))`
+
+Advanced / Extra Topics Related to Project
+
+Q121: How to use machine learning to improve matching?
+A: Train a classifier (e.g., logistic regression) on labeled matches and use embeddings for semantic matching.
+
+Q122: What are word embeddings and why useful?
+A: Represent words as vectors capturing semantics (use `spaCy` or `gensim`) for better matching than keyword-only.
+
+Q123: How to use pre-trained models for NER (names, orgs)?
+A: Use `spaCy` or `transformers` NER models to extract entities.
+
+Q124: How to anonymize resumes for bias-free screening?
+A: Remove name, gender, photo, and other demographic data before scoring.
+
+Q125: How to implement background tasks for parsing?
+A: Use Celery (with Redis/RabbitMQ) and offload heavy parsing to workers.
+
+Q126: How to implement A/B testing for scoring algorithms?
+A: Route a percentage of applications to a new scoring method and compare hires/engagement.
+
+Q127: How to add analytics to hiring flows?
+A: Track events (uploads, views, applications) and report conversion rates.
+
+Q128: What ethical considerations apply?
+A: Avoid biased training data, ensure transparency and explainability for automated decisions.
+
+Q129: How to add internationalization?
+A: Use Django i18n (`ugettext`) and separate templates or translation files.
+
+Q130: How to integrate LinkedIn or external job APIs?
+A: Use provider APIs, handle OAuth, and map external fields to internal models.
+
+Study Tips & Interview Prep (quick)
+
+Q131: How to prepare for Python weak spots?
+A: Practice small exercises: file I/O, lists/dicts, functions, and small Django views.
+
+Q132: How to present this project in interviews?
+A: Start with problem statement, architecture, your role, challenges faced, improvements, and demos.
+
+Q133: Which code to highlight in interview?
+A: Show `resume_parser.py`, extraction regex, scoring logic, and a view handling uploads.
+
+Q134: How to answer 'What did you learn?'
+A: Mention Django, file parsing, regex/NLP basics, and deployment considerations.
+
+Q135: How to practice mock interviews?
+A: I'll run a Q&A mock session with follow-ups and feedback if you want.
+
+Short Code Examples (quick reference)
+
+Q136: Example regex to find email:
+A: `import re; re.search(r'[\\w.+-]+@[\\w-]+\\.[\\w.-]+', text).group()`
+
+Q137: Basic match scoring function:
+A: Simple example:
+A: `def score(resume_tokens, job_tokens): return len(set(resume_tokens) & set(job_tokens)) / len(job_tokens)`
+
+Q138: Example view to upload resume:
+A: `def upload_resume(request): if request.method=='POST': f=request.FILES['resume']; handle_save_and_parse(f); return redirect('results')`
+
+Wrap-up and next steps
+
+Q139: Can you give me 30 flashcards from these?
+A: Yes — tell me which category to prioritize.
+
+Q140: Can you quiz me interactively?
+A: Yes — ask which mode (rapid-fire, explain-after, hints).
+
+If you'd like, I can:
+- Convert any subset into flashcards or a prioritized study plan.
+- Run a live mock interview session with follow-up questions.
+- Provide deeper, step-by-step Python code examples for any of the parsing, scoring, or Django parts (I can add tests and show how to run them).
+
+Which of these would you like next?
+
+---
+Generated by your assistant on December 7, 2025.
